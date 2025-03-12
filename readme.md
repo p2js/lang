@@ -61,7 +61,7 @@ impl Display for Rectangle {
 }
 
 fn main() {
-    let r: Rectangle = identity(.{width: 4, height: 5});
+    let r: Rectangle = identity({width: 4, height: 5});
     std::println(r); // prints "Area: 20"
 }
 ```

@@ -1,5 +1,6 @@
 a.out
 input
+main.chg
 *.js
 *.ll
 node_modules
