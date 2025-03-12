@@ -1,11 +1,11 @@
 type Point<T> constructible(mkPoint) = { x: T, y: T };
 
 fn mkPoint<T>(x: T, y: T): Point<T> {
-    return .{ x: x, y: y };
+    return { x: x, y: y };
 }
 
 fn notAllowed(): Point<i32> {
-    return .{ x: 1, y: 2 };
+    return { x: 1, y: 2 };
 }
 
 fn main(): i32 {

@@ -1,5 +1,5 @@
 fn simpleRecord(v: i32): { x: i32, y: i32 } {
-    return .{ x: v * 2, y: v };
+    return { x: v * 2, y: v };
 }
 
 fn main(): i32 {

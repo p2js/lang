@@ -8,7 +8,7 @@ use root::std::libc::memcpy;
 type StrRepr = root::std::slice::Repr<u8>;
 impl str {
   fn from_raw_parts(ptr: u8*, len: u64): str* {
-    return bitcast(.{ ptr: ptr, len: len });
+    return bitcast({ ptr: ptr, len: len });
   }
 
   fn as_ptr(self*): u8* {
@@ -36,7 +36,7 @@ impl str {
     if from > self.len() {
       fatal("string index out of bounds");
     }
-    let repr: StrRepr = .{ ptr: ptr::add(self.as_ptr(), from), len: self.len() - from };
+    let repr: StrRepr = { ptr: ptr::add(self.as_ptr(), from), len: self.len() - from };
     return bitcast(repr);
   }
 
@@ -44,7 +44,7 @@ impl str {
     if to >= self.len() {
       fatal("string index out of bounds");
     }
-    let repr: StrRepr = .{ ptr: self.as_ptr(), len: to };
+    let repr: StrRepr = { ptr: self.as_ptr(), len: to };
     return bitcast(repr);
   }
   

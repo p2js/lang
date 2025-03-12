@@ -11,12 +11,12 @@ type Vec<T> = { ptr: T*, len: u64, cap: u64 };
 
 impl<T> Vec<T> {
   fn new(): Vec<T> {
-    return .{ ptr: ptr::null(), len: 0, cap: 0 };
+    return { ptr: ptr::null(), len: 0, cap: 0 };
   }
 
   fn with_capacity(cap: u64): Vec<T> {
     let ptr = malloc(cap * sizeof::<T>());
-    return .{ ptr: ptr::cast(ptr), len: 0, cap: cap };
+    return { ptr: ptr::cast(ptr), len: 0, cap: cap };
   }
 
   fn get(self*, index: u64): T* {

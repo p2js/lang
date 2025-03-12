@@ -599,10 +599,9 @@ export function parse(sm: SourceMap, attrs: AttrMap, file: File): Module {
                 break;
             case TokenType.True: expr = { type: 'Bool', span: tokens[i].span, value: true }; break;
             case TokenType.False: expr = { type: 'Bool', span: tokens[i].span, value: false }; break;
-            case TokenType.Dot: {
+            case TokenType.LBrace: {
                 const span = tokens[i].span;
                 i++;
-                eatToken(TokenType.LBrace);
                 const fields: RecordFields<Expr> = [];
 
                 while (!eatToken(TokenType.RBrace, false)) {
@@ -729,7 +728,14 @@ export function parse(sm: SourceMap, attrs: AttrMap, file: File): Module {
                 expr = { type: 'Return', span: joinSpan(returnKwSpan, value.span), value };
                 break;
             }
-            case TokenType.LBrace: expr = parseBlockExpr(true); break;
+            case TokenType.LBrace:
+                // Assume {} or { [...] : refers to a record instead
+                if (ctxt != ParseContext.Statement && (tokens[i + 1]?.ty == TokenType.RBrace || tokens[i + 2]?.ty == TokenType.Colon)) {
+                    expr = parseBottomExpr();
+                } else {
+                    expr = parseBlockExpr(true);
+                }
+                break;
             case TokenType.LParen: {
                 // Either tuple type or grouping, depending on if the expression is followed by a comma
                 const lparenSpan = tokens[i++].span;

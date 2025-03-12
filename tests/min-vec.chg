@@ -7,7 +7,7 @@ type Vec<T> constructible(mkVec) = {
 };
 
 fn mkVec<T>(): Vec<T> {
-    return .{ ptr: bitcast(0), len: 0u64, cap: 0u64 };
+    return { ptr: bitcast(0), len: 0u64, cap: 0u64 };
 }
 
 fn push<T>(vec: Vec<T>*, value: T): i32 {

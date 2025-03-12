@@ -3,11 +3,11 @@ type Point<T> = { x: T, y: T };
 type Nested<T> = { p: Point<T> };
 
 fn point<T>(x: T, y: T): Point<T> {
-    return .{ x: x, y: y };
+    return { x: x, y: y };
 }
 
 fn single<T>(v: T): Nested<T> {
-    return .{ p: point(v, v) };
+    return { p: point(v, v) };
 }
 
 fn main(): i32 {

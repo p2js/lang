@@ -7,7 +7,7 @@ impl<T> V<T> {
 fn free<T>(s: V<T>*) {}
 
 fn main(): i32 {
-  let v: V<i32> = .{ value: 42 };
+  let v: V<i32> = { value: 42 };
   free(&v);
   V::<i32>::foo(&v);
   V::foo(&v);

@@ -20,7 +20,7 @@ fn print(s: str*) {
 type Vec<T> constructible(mk_vec) = { ptr: T*, len: u64, cap: u64 };
 
 fn mk_vec<T>(): Vec<T> {
-  return .{ ptr: bitcast(0), len: 0u64, cap: 0u64 };
+  return { ptr: bitcast(0), len: 0u64, cap: 0u64 };
 }
 
 fn at<T>(vec: Vec<T>*, index: u64): T* {
