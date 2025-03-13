@@ -530,6 +530,25 @@ export function parse(sm: SourceMap, attrs: AttrMap, file: File): Module {
         return ty;
     }
 
+    /**  Parse an if expression. Expects the first token to be of type If */
+    function parseIfExpr(): { type: 'If' } & Expr {
+        const ifSpan = tokens[i++].span;
+        const condition = parseRootSubexpr();
+        const body = parseBlockExpr(true);
+        let _else: Expr & { type: 'If' | 'Block' } | null = null;
+        if (eatToken(TokenType.Else, false)) {
+            switch (tokens[i]?.ty) {
+                case TokenType.If:
+                    _else = parseIfExpr(); break;
+                case TokenType.LBrace:
+                    _else = parseBlockExpr(true); break;
+                default:
+                    err(tokens[i]?.span || tokens[i - 1].span, 'Expected either a block or chained `if` expression after `else`');
+            }
+        }
+        return { type: 'If', condition, then: body, else: _else, span: joinSpan(ifSpan, tokens[i - 1].span) };
+    };
+
     function parseBottomExpr(): Expr {
         let expr: Expr;
         switch (tokens[i].ty) {
@@ -607,8 +626,13 @@ export function parse(sm: SourceMap, attrs: AttrMap, file: File): Module {
                 while (!eatToken(TokenType.RBrace, false)) {
                     eatToken(TokenType.Comma, false);
                     const ident = expectIdent();
-                    eatToken(TokenType.Colon);
-                    const value = parseRootSubexpr();
+                    let value: Expr;
+                    if (eatToken(TokenType.Comma, false) || tokens[i]?.ty == TokenType.RBrace) {
+                        value = { type: 'Path', span: tokens[i - 2].span, path: { segments: [{ ident, args: [] }] } };
+                    } else {
+                        eatToken(TokenType.Colon);
+                        value = parseRootSubexpr();
+                    }
                     fields.push([ident, value]);
                 }
                 return { span: joinSpan(span, tokens[i - 1].span), type: 'Record', fields };
@@ -729,8 +753,18 @@ export function parse(sm: SourceMap, attrs: AttrMap, file: File): Module {
                 break;
             }
             case TokenType.LBrace:
-                // Assume {} or { [...] : refers to a record instead
-                if (ctxt != ParseContext.Statement && (tokens[i + 1]?.ty == TokenType.RBrace || tokens[i + 2]?.ty == TokenType.Colon)) {
+                /* Assume the following refer to records:
+                    {}
+                    { [ident] }
+                    { [ident] ,
+                    { [ident] :
+                    And other cases refer to blocks.
+                    Note this doesn't apply where only a block is expected (like function bodies).
+                */
+                if (ctxt != ParseContext.Statement &&
+                    (tokens[i + 1]?.ty == TokenType.RBrace ||
+                        (tokens[i + 1]?.ty == TokenType.Ident &&
+                            (tokens[i + 2]?.ty == TokenType.RBrace || tokens[i + 2]?.ty == TokenType.Comma || tokens[i + 2]?.ty == TokenType.Colon)))) {
                     expr = parseBottomExpr();
                 } else {
                     expr = parseBlockExpr(true);
@@ -762,23 +796,7 @@ export function parse(sm: SourceMap, attrs: AttrMap, file: File): Module {
                 break;
             }
             case TokenType.If: {
-                const ifSpan = tokens[i++].span;
-                const condition = parseRootSubexpr();
-                const body = parseBlockExpr(true);
-                let _else: Expr & { type: 'If' | 'Block' } | null = null;
-                if (eatToken(TokenType.Else, false)) {
-                    switch (tokens[i]?.ty) {
-                        case TokenType.If:
-                            // This seems like a bit of a hack: we parse in a statement context
-                            // so that we don't parse `if ... else { 0 } + 1` as `else ({ 0 } + 1)`
-                            _else = parseRootStmtExpr() as Expr & { type: 'If' }; break;
-                        case TokenType.LBrace:
-                            _else = parseBlockExpr(true); break;
-                        default:
-                            err(tokens[i]?.span || tokens[i - 1].span, 'Expected either a block or chained `if` expression after `else`');
-                    }
-                }
-                expr = { type: 'If', condition, then: body, else: _else, span: joinSpan(ifSpan, tokens[i - 1].span) };
+                expr = parseIfExpr();
                 break;
             }
             case TokenType.While: {
