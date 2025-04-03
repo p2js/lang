@@ -6,7 +6,6 @@
   "scripts": {
     "compile": "node .",
     "build": "node_modules/esbuild/bin/esbuild --log-level=warning --outdir=dist --format=cjs --platform=node ./src/*.ts",
-    "build-tsc": "tsc",
     "test": "node dist/ui"
   },
   "author": "",
